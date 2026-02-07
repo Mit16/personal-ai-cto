@@ -1,0 +1,10 @@
+{
+  "name": "personal-ai-cto",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Personal AI CTO monorepo",
+  "scripts": {
+    "dev:core": "cd execution/core && npm run dev",
+    "dev:discord": "cd interface/discord-bot && npm run dev"
+  }
+}
