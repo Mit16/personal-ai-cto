@@ -4,6 +4,7 @@ import cors from "cors";
 import morgan from "morgan";
 import helmet from "helmet";
 import goalsRouter from "./routes/goals";
+import projectsRouter from "./routes/projects";
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(helmet());
 app.use(morgan("dev"));
 
 app.use("/goals", goalsRouter);
+app.use("/projects",projectsRouter);
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
