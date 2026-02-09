@@ -25,7 +25,11 @@ export const data = new SlashCommandBuilder()
     subcommand.setName("list").setDescription("List active goals"),
   );
 
-export async function execute(interaction: ChatInputCommandInteraction) {
+export const statusData = new SlashCommandBuilder()
+  .setName("status")
+  .setDescription("Show commit activity and goals");
+
+export async function executeGoal(interaction: ChatInputCommandInteraction) {
   const subcommand = interaction.options.getSubcommand();
 
   if (subcommand === "add") {
@@ -67,5 +71,23 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       console.error("Failed to fetch goals:", error);
       await interaction.reply("Failed to fetch goals");
     }
+  }
+}
+
+export async function executeStatus(interaction: ChatInputCommandInteraction) {
+  try {
+    const response = await axios.get(`${BACKEND_URL}/commits/stats`);
+    const stats = response.data;
+
+    const output = [
+      `**Commits today:** ${stats.commits_today}`,
+      `**Commits last 7 days:** ${stats.commits_last_7_days}`,
+      `**Active goals:** ${stats.active_goals}`,
+    ].join("\n");
+
+    await interaction.reply(output);
+  } catch (error) {
+    console.error("Failed to fetch status:", error);
+    await interaction.reply("Failed to fetch status");
   }
 }

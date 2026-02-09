@@ -1,7 +1,7 @@
 // interface\discord-bot\src\index.ts
 import { Client, GatewayIntentBits, REST, Routes } from "discord.js";
-import { DISCORD_TOKEN,DISCORD_CLIENT_ID } from "./config/config.js";
-import * as goalCommand from "./commands/goal.js";
+import { DISCORD_TOKEN, DISCORD_CLIENT_ID } from "./config/config.js";
+import * as goalCommand from "./commands/commands.js";
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds],
@@ -33,7 +33,11 @@ client.on("interactionCreate", async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
   if (interaction.commandName === "goal") {
-    await goalCommand.execute(interaction);
+    await goalCommand.executeGoal(interaction);
+  }
+
+  if (interaction.commandName === "status") {
+    await goalCommand.executeStatus(interaction);
   }
 });
 
