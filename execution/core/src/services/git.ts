@@ -65,16 +65,52 @@ export async function ingestCommits(projectId: number): Promise<number> {
       // Skip if we already have this commit
       if (commit.hash === lastHash) continue;
 
-      // Get diff stats
-      const diff = await git.diffSummary([`${commit.hash}^`, commit.hash]);
+      let commitData: CommitData;
 
-      const commitData: CommitData = {
-        hash: commit.hash,
-        timestamp: new Date(commit.date),
-        filesChanged: diff.files.length,
-        linesAdded: diff.insertions,
-        linesRemoved: diff.deletions,
-      };
+      try {
+        // Try to get diff stats (this will fail for the first commit with no parent)
+        const diff = await git.diffSummary([`${commit.hash}^`, commit.hash]);
+
+        commitData = {
+          hash: commit.hash,
+          timestamp: new Date(commit.date),
+          filesChanged: diff.files.length,
+          linesAdded: diff.insertions,
+          linesRemoved: diff.deletions,
+        };
+      } catch (diffError) {
+        // For the first commit (no parent), get stats differently
+        console.log(
+          `First commit detected: ${commit.hash.substring(0, 7)}, using alternative stats`,
+        );
+
+        const show = await git.show([commit.hash, "--stat", "--format="]);
+
+        // Parse the stat output to count changes
+        const lines = show.split("\n").filter((line) => line.trim());
+        const statsLine = lines[lines.length - 1];
+
+        // Try to extract numbers from " X files changed, Y insertions(+), Z deletions(-)"
+        let filesChanged = 0;
+        let linesAdded = 0;
+        let linesRemoved = 0;
+
+        const filesMatch = statsLine.match(/(\d+) files? changed/);
+        const insertMatch = statsLine.match(/(\d+) insertions?\(\+\)/);
+        const deleteMatch = statsLine.match(/(\d+) deletions?\(-\)/);
+
+        if (filesMatch) filesChanged = parseInt(filesMatch[1]);
+        if (insertMatch) linesAdded = parseInt(insertMatch[1]);
+        if (deleteMatch) linesRemoved = parseInt(deleteMatch[1]);
+
+        commitData = {
+          hash: commit.hash,
+          timestamp: new Date(commit.date),
+          filesChanged,
+          linesAdded,
+          linesRemoved,
+        };
+      }
 
       // Store commit
       await pool.query(
