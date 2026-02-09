@@ -16,5 +16,3 @@ pool.on("error", (err) => {
 pool.on("connect", () => {
   console.log("Connect to PostgtreSQL");
 });
-
-

@@ -2,8 +2,7 @@
 import { SlashCommandBuilder } from "discord.js";
 import { ChatInputCommandInteraction } from "discord.js";
 import axios from "axios";
-
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
+import { BACKEND_URL } from "../config/config.js";
 
 export const data = new SlashCommandBuilder()
   .setName("goal")

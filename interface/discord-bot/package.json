@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "ts-node src/index.ts"
+    "dev": "node --env-file=.env --loader ts-node/esm src/index.ts"
   },
   "dependencies": {
     "discord.js": "^14.25.1",
@@ -12,6 +12,7 @@
   },
   "devDependencies": {
     "typescript": "^5.9.3",
+    "ts-node": "^10.9.2",
     "@types/node": "^20.11.30"
   }
 }

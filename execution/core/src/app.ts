@@ -3,8 +3,8 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import helmet from "helmet";
-import goalsRouter from "./routes/goals";
-import projectsRouter from "./routes/projects";
+import goalsRouter from "./routes/goals.js";
+import projectsRouter from "./routes/projects.js";
 
 const app = express();
 

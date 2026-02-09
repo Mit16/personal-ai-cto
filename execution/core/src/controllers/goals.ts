@@ -1,6 +1,6 @@
 // execution/core/src/controllers/goal.ts
 import { Request, Response } from "express";
-import {pool} from "../db";
+import {pool} from "../db.js";
 
 export const addGoals = async (req: Request, res: Response): Promise<void> => {
   try {

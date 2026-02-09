@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "ts-node src/server.ts",
+    "dev": "node --env-file=.env --loader ts-node/esm src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js"
   },

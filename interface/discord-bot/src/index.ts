@@ -1,9 +1,7 @@
 // interface\discord-bot\src\index.ts
 import { Client, GatewayIntentBits, REST, Routes } from "discord.js";
-import dotenv from "dotenv";
-import * as goalCommand from "./commands/goal";
-
-dotenv.config();
+import { DISCORD_TOKEN,DISCORD_CLIENT_ID } from "./config/config.js";
+import * as goalCommand from "./commands/goal.js";
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds],
@@ -11,13 +9,13 @@ const client = new Client({
 
 const commands = [goalCommand.data.toJSON()];
 
-const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);
+const rest = new REST({ version: "10" }).setToken(DISCORD_TOKEN);
 
 (async () => {
   try {
     console.log("Registering slash commands...");
 
-    await rest.put(Routes.applicationCommands(process.env.DISCORD_CLIENT_ID!), {
+    await rest.put(Routes.applicationCommands(DISCORD_CLIENT_ID), {
       body: commands,
     });
 
@@ -39,4 +37,4 @@ client.on("interactionCreate", async (interaction) => {
   }
 });
 
-client.login(process.env.DISCORD_TOKEN);
+client.login(DISCORD_TOKEN);

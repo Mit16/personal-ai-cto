@@ -1,6 +1,6 @@
 // execution/core/src/routes/goal.ts
 import { Router} from 'express';
-import { addGoals, getGoals } from '../controllers/goals';
+import { addGoals, getGoals } from '../controllers/goals.js';
 
 const goalsRouter = Router();
 
