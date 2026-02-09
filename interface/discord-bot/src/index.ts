@@ -7,7 +7,10 @@ const client = new Client({
   intents: [GatewayIntentBits.Guilds],
 });
 
-const commands = [goalCommand.data.toJSON()];
+const commands = [
+  goalCommand.data.toJSON(),
+  goalCommand.statusData.toJSON(), // Add this line!
+];
 
 const rest = new REST({ version: "10" }).setToken(DISCORD_TOKEN);
 
