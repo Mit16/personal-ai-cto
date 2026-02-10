@@ -48,32 +48,66 @@ export async function reviewCode(
 ): Promise<CodeReviewResponse> {
   const prompt = buildPrompt(request);
 
+  console.log(`[LLM] Requesting review from ${LLM_PROVIDER}...`);
+
   let responseText: string;
-
-  if (LLM_PROVIDER === "claude") {
-    responseText = await callClaude(prompt);
-  } else if (LLM_PROVIDER === "gemini") {
-    responseText = await callGemini(prompt);
-  } else {
-    throw new Error(`Unsupported LLM provider: ${LLM_PROVIDER}`);
-  }
-
-  // Parse and validate
-  let parsed: any;
   try {
-    const cleaned = responseText.replace(/```json\n?|\n?```/g, "").trim();
-    parsed = JSON.parse(cleaned);
+    if (LLM_PROVIDER === "claude") {
+      responseText = await callClaude(prompt);
+    } else if (LLM_PROVIDER === "gemini") {
+      responseText = await callGemini(prompt);
+    } else {
+      throw new Error(`Unsupported LLM provider: ${LLM_PROVIDER}`);
+    }
+
+    // DEBUGGING: Print the raw response to see exactly what we got
+    console.log("---------------------------------------------------");
+    console.log(`[LLM] RAW RESPONSE (${LLM_PROVIDER}):`);
+    console.log(responseText);
+    console.log("---------------------------------------------------");
+
+    // Parse and validate
+    const parsed = cleanAndParseJSON(responseText);
+
+    if (!validateSchema(parsed)) {
+      console.error("Schema validation failed:", validateSchema.errors);
+      throw new Error("LLM response does not match schema");
+    }
+
+    return parsed as CodeReviewResponse;
   } catch (error) {
-    console.error("Failed to parse LLM response:", responseText);
-    throw new Error("LLM returned invalid JSON");
+    console.error("[LLM] Critical Failure:", error);
+    throw error;
   }
+}
 
-  if (!validateSchema(parsed)) {
-    console.error("Schema validation failed:", validateSchema.errors);
-    throw new Error("LLM response does not match schema");
+function cleanAndParseJSON(text: string): any {
+  try {
+    // 1. Try direct parse (fastest)
+    return JSON.parse(text);
+  } catch (e) {
+    // 2. Try stripping markdown code blocks
+    try {
+      const markdownStripped = text.replace(/```json\n?|\n?```/g, "").trim();
+      return JSON.parse(markdownStripped);
+    } catch (e2) {
+      // 3. Robust Fallback: Extract substrings between first { and last }
+      const firstBrace = text.indexOf("{");
+      const lastBrace = text.lastIndexOf("}");
+
+      if (firstBrace !== -1 && lastBrace !== -1) {
+        const extracted = text.substring(firstBrace, lastBrace + 1);
+        try {
+          return JSON.parse(extracted);
+        } catch (e3) {
+          throw new Error(
+            `JSON Clean failed. Extracted: ${extracted.substring(0, 50)}...`,
+          );
+        }
+      }
+      throw new Error("No JSON object structure found in response");
+    }
   }
-
-  return parsed as CodeReviewResponse;
 }
 
 async function callClaude(prompt: string): Promise<string> {
@@ -100,8 +134,9 @@ async function callGemini(prompt: string): Promise<string> {
       model: "gemini-3-flash-preview",
       contents: prompt,
       config: {
-        temperature: 0.3,
-        maxOutputTokens: 1024,
+        temperature: 0.2,
+        maxOutputTokens: 2048,
+        responseMimeType: "application/json",
       },
     });
 
