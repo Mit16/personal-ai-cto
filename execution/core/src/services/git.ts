@@ -1,3 +1,4 @@
+// execution\core\src\services\git.ts
 import simpleGit, { SimpleGit, LogResult } from "simple-git";
 import { pool } from "../db.js";
 import fs from "fs";
@@ -16,6 +17,7 @@ interface CommitData {
   filesChanged: number;
   linesAdded: number;
   linesRemoved: number;
+  message: string;
 }
 
 export async function ingestCommits(projectId: number): Promise<number> {
@@ -77,6 +79,7 @@ export async function ingestCommits(projectId: number): Promise<number> {
           filesChanged: diff.files.length,
           linesAdded: diff.insertions,
           linesRemoved: diff.deletions,
+          message: commit.message,
         };
       } catch (diffError) {
         // For the first commit (no parent), get stats differently
@@ -109,14 +112,15 @@ export async function ingestCommits(projectId: number): Promise<number> {
           filesChanged,
           linesAdded,
           linesRemoved,
+          message: commit.message,
         };
       }
 
       // Store commit
       await pool.query(
-        `INSERT INTO commits (hash, project_id, timestamp, files_changed, lines_added, lines_removed)
-         VALUES ($1, $2, $3, $4, $5, $6)
-         ON CONFLICT (hash) DO NOTHING`,
+        `INSERT INTO commits (hash, project_id, timestamp, files_changed, lines_added, lines_removed, message)
+   VALUES ($1, $2, $3, $4, $5, $6, $7)
+   ON CONFLICT (hash) DO NOTHING`,
         [
           commitData.hash,
           projectId,
@@ -124,6 +128,7 @@ export async function ingestCommits(projectId: number): Promise<number> {
           commitData.filesChanged,
           commitData.linesAdded,
           commitData.linesRemoved,
+          commitData.message,
         ],
       );
 
@@ -136,6 +141,45 @@ export async function ingestCommits(projectId: number): Promise<number> {
     return newCommitsCount;
   } catch (error) {
     console.error(`Failed to ingest commits for project ${projectId}:`, error);
+    throw error;
+  }
+}
+
+export async function getCommitDiff(
+  projectId: number,
+  commitHash: string,
+): Promise<string> {
+  try {
+    const projectResult = await pool.query(
+      "SELECT repo_url FROM projects WHERE id = $1",
+      [projectId],
+    );
+
+    if (projectResult.rows.length === 0) {
+      throw new Error(`Project ${projectId} not found`);
+    }
+
+    const repoUrl = projectResult.rows[0].repo_url;
+    const repoName =
+      repoUrl.split("/").pop()?.replace(".git", "") || `project-${projectId}`;
+    const repoPath = path.join(REPOS_DIR, repoName);
+
+    if (!fs.existsSync(repoPath)) {
+      throw new Error(`Repository not cloned yet`);
+    }
+
+    const git = simpleGit(repoPath);
+
+    try {
+      const diff = await git.diff([`${commitHash}^`, commitHash]);
+      return diff;
+    } catch (error) {
+      // Handle first commit (no parent)
+      const show = await git.show([commitHash]);
+      return show;
+    }
+  } catch (error) {
+    console.error(`Failed to get diff for commit ${commitHash}:`, error);
     throw error;
   }
 }

@@ -9,7 +9,8 @@ const client = new Client({
 
 const commands = [
   goalCommand.data.toJSON(),
-  goalCommand.statusData.toJSON(), // Add this line!
+  goalCommand.statusData.toJSON(),
+  goalCommand.reviewData.toJSON(),
 ];
 
 const rest = new REST({ version: "10" }).setToken(DISCORD_TOKEN);
@@ -41,6 +42,10 @@ client.on("interactionCreate", async (interaction) => {
 
   if (interaction.commandName === "status") {
     await goalCommand.executeStatus(interaction);
+  }
+
+  if (interaction.commandName === "review_latest_commit") {
+    await goalCommand.executeReview(interaction);
   }
 });
 

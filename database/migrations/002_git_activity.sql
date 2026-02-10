@@ -9,6 +9,7 @@ CREATE TABLE commits (
   id SERIAL PRIMARY KEY,
   hash TEXT NOT NULL UNIQUE,
   project_id INTEGER REFERENCES projects(id),
+  message TEXT,
   timestamp TIMESTAMP NOT NULL,
   files_changed INTEGER,
   lines_added INTEGER,

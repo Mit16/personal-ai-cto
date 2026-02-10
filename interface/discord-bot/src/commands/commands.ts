@@ -1,4 +1,4 @@
-// interface\discord-bot\src\commands\goal.ts
+// interface\discord-bot\src\commands\commands.ts
 import { SlashCommandBuilder } from "discord.js";
 import { ChatInputCommandInteraction } from "discord.js";
 import axios from "axios";
@@ -89,5 +89,55 @@ export async function executeStatus(interaction: ChatInputCommandInteraction) {
   } catch (error) {
     console.error("Failed to fetch status:", error);
     await interaction.reply("Failed to fetch status");
+  }
+}
+
+export const reviewData = new SlashCommandBuilder()
+  .setName("review_latest_commit")
+  .setDescription("Review the most recent commit");
+
+export async function executeReview(interaction: ChatInputCommandInteraction) {
+  try {
+    await interaction.deferReply();
+
+    const response = await axios.get(`${BACKEND_URL}/reviews/latest`);
+    const data = response.data;
+    const review = data.review;
+
+    const output = [
+      `**Commit:** \`${data.commit_hash.substring(0, 7)}\` (reviewed by ${data.provider})`,
+      `**Alignment Score:** ${review.alignment_score.toFixed(2)}`,
+      `**Quality:** ${review.execution_quality}`,
+      ``,
+      `**Summary:**`,
+      review.summary,
+      ``,
+      ...(review.architecture_issues.length > 0
+        ? [
+            `**Architecture Issues:**`,
+            ...review.architecture_issues.map((issue: string) => `- ${issue}`),
+          ]
+        : []),
+      ...(review.code_smells.length > 0
+        ? [
+            `**Code Smells:**`,
+            ...review.code_smells.map((smell: string) => `- ${smell}`),
+          ]
+        : []),
+      ``,
+      `**Recommended Action:**`,
+      review.recommended_action,
+    ].join("\n");
+
+    await interaction.editReply(output);
+  } catch (error: any) {
+    console.error("Failed to fetch review:", error);
+    if (error.response?.status === 404) {
+      await interaction.editReply(
+        "No reviews found. Run /goal add and make a commit first.",
+      );
+    } else {
+      await interaction.editReply("Failed to fetch review");
+    }
   }
 }
