@@ -5,6 +5,10 @@ import {
   updateDailyActivity,
   getActiveDriftEvents,
 } from "../services/drift.js";
+import {
+  runDailyEnforcement,
+  shouldRunEnforcement,
+} from "../services/enforcement.js";
 
 export const checkDrift = async (
   req: Request,
@@ -51,5 +55,33 @@ export const getDailyActivity = async (
   } catch (error) {
     console.error("Failed to fetch daily activity:", error);
     res.status(500).json({ error: "Unable to fetch daily activity" });
+  }
+};
+
+export const triggerEnforcement = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const canRun = await shouldRunEnforcement();
+
+    if (!canRun) {
+      res.json({
+        message: "Enforcement already ran today",
+        ran: false,
+      });
+      return;
+    }
+
+    // Run enforcement
+    await runDailyEnforcement();
+
+    res.json({
+      message: "Enforcement complete",
+      ran: true,
+    });
+  } catch (error) {
+    console.error("Enforcement trigger failed:", error);
+    res.status(500).json({ error: "Enforcement failed" });
   }
 };

@@ -11,6 +11,7 @@ const commands = [
   goalCommand.data.toJSON(),
   goalCommand.statusData.toJSON(),
   goalCommand.reviewData.toJSON(),
+  goalCommand.enforceData.toJSON(),
 ];
 
 const rest = new REST({ version: "10" }).setToken(DISCORD_TOKEN);
@@ -46,6 +47,10 @@ client.on("interactionCreate", async (interaction) => {
 
   if (interaction.commandName === "review_latest_commit") {
     await goalCommand.executeReview(interaction);
+  }
+
+  if (interaction.commandName === "enforce") {
+    await goalCommand.executeEnforce(interaction);
   }
 });
 

@@ -141,3 +141,27 @@ export async function executeReview(interaction: ChatInputCommandInteraction) {
     }
   }
 }
+
+export const enforceData = new SlashCommandBuilder()
+  .setName("enforce")
+  .setDescription("Manually trigger enforcement check");
+
+export async function executeEnforce(interaction: ChatInputCommandInteraction) {
+  try {
+    await interaction.deferReply();
+
+    const response = await axios.post(`${BACKEND_URL}/enforcement/trigger`);
+    const data = response.data;
+
+    if (data.ran) {
+      await interaction.editReply(
+        "Enforcement check completed. Check channel for warnings.",
+      );
+    } else {
+      await interaction.editReply("Enforcement already ran today.");
+    }
+  } catch (error) {
+    console.error("Failed to trigger enforcement:", error);
+    await interaction.editReply("Failed to trigger enforcement");
+  }
+}
