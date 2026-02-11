@@ -7,6 +7,7 @@ import goalsRouter from "./routes/goals.js";
 import projectsRouter from "./routes/projects.js";
 import commitsRouter from "./routes/commits.js";
 import reviewsRouter from "./routes/reviews.js";
+import enforcementRouter from "./routes/enforcement.js";
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use("/goals", goalsRouter);
 app.use("/projects", projectsRouter);
 app.use("/commits", commitsRouter);
 app.use("/reviews", reviewsRouter);
+app.use("/enforcement", enforcementRouter);
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
