@@ -165,3 +165,36 @@ export async function executeEnforce(interaction: ChatInputCommandInteraction) {
     await interaction.editReply("Failed to trigger enforcement");
   }
 }
+
+export const summaryData = new SlashCommandBuilder()
+  .setName("weekly_summary")
+  .setDescription("Get this week's performance summary");
+
+export async function executeSummary(interaction: ChatInputCommandInteraction) {
+  try {
+    await interaction.deferReply();
+
+    const response = await axios.post(`${BACKEND_URL}/enforcement/weekly`);
+    const summary = response.data.summary;
+
+    const output = `📊 **WEEKLY SUMMARY**
+
+**Pattern:**
+${summary.execution_summary}
+
+**Dominant Failure Mode:** ${summary.dominant_failure_mode.replace(/_/g, " ").toUpperCase()}
+
+**Metrics:**
+- Commit frequency: ${summary.metrics?.commit_frequency || "unknown"}
+- Alignment trend: ${summary.metrics?.alignment_trend || "unknown"}
+- Quality trend: ${summary.metrics?.quality_trend || "unknown"}
+
+**Required Action:**
+${summary.recommendation}`;
+
+    await interaction.editReply(output);
+  } catch (error: any) {
+    console.error("Failed to generate summary:", error);
+    await interaction.editReply("Failed to generate weekly summary");
+  }
+}

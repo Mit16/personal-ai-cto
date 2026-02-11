@@ -12,6 +12,7 @@ const commands = [
   goalCommand.statusData.toJSON(),
   goalCommand.reviewData.toJSON(),
   goalCommand.enforceData.toJSON(),
+  goalCommand.summaryData.toJSON(),
 ];
 
 const rest = new REST({ version: "10" }).setToken(DISCORD_TOKEN);
@@ -51,6 +52,10 @@ client.on("interactionCreate", async (interaction) => {
 
   if (interaction.commandName === "enforce") {
     await goalCommand.executeEnforce(interaction);
+  }
+
+  if (interaction.commandName === "weekly_summary") {
+    await goalCommand.executeSummary(interaction);
   }
 });
 

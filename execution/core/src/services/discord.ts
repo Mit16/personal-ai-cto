@@ -63,3 +63,34 @@ export function formatDriftMessage(driftTypes: string[], details: any): string {
 
   return messages.join("\n\n");
 }
+
+/**
+ * Format weekly summary message (exposes patterns)
+ */
+export function formatWeeklySummary(summary: any): string {
+  const failureModeEmoji: any = {
+    idle: "😴",
+    misaligned_work: "🎯",
+    low_quality_output: "⚠️",
+    inconsistent_execution: "📉",
+    no_clear_pattern: "❓",
+    on_track: "✅",
+  };
+
+  const emoji = failureModeEmoji[summary.dominant_failure_mode] || "📊";
+
+  return `${emoji} **WEEKLY SUMMARY**
+
+**Pattern:**
+${summary.execution_summary}
+
+**Dominant Failure Mode:** ${summary.dominant_failure_mode.replace(/_/g, " ").toUpperCase()}
+
+**Metrics:**
+- Commit frequency: ${summary.metrics?.commit_frequency || "unknown"}
+- Alignment trend: ${summary.metrics?.alignment_trend || "unknown"}
+- Quality trend: ${summary.metrics?.quality_trend || "unknown"}
+
+**Required Action:**
+${summary.recommendation}`;
+}

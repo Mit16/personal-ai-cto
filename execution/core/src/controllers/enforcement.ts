@@ -9,6 +9,14 @@ import {
   runDailyEnforcement,
   shouldRunEnforcement,
 } from "../services/enforcement.js";
+import {
+  generateWeeklySummary,
+  storeWeeklySummary,
+} from "../services/weekly-summary.js";
+import {
+  formatWeeklySummary,
+  sendEnforcementMessage,
+} from "../services/discord.js";
 
 export const checkDrift = async (
   req: Request,
@@ -83,5 +91,60 @@ export const triggerEnforcement = async (
   } catch (error) {
     console.error("Enforcement trigger failed:", error);
     res.status(500).json({ error: "Enforcement failed" });
+  }
+};
+
+export const triggerWeeklySummary = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    console.log("📊 Generating weekly summary...");
+
+    // Generate summary using LLM
+    const summary = await generateWeeklySummary();
+
+    // Store in database
+    await storeWeeklySummary(summary);
+
+    // Send to Discord
+    const message = formatWeeklySummary(summary);
+    await sendEnforcementMessage(message, "warning");
+
+    res.json({
+      message: "Weekly summary generated and sent",
+      summary,
+    });
+  } catch (error) {
+    console.error("Weekly summary failed:", error);
+    res.status(500).json({ error: "Weekly summary failed" });
+  }
+};
+
+export const getLatestSummary = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const result = await pool.query(
+      `SELECT payload_json, created_at
+       FROM system_events
+       WHERE type = 'weekly_summary'
+       ORDER BY created_at DESC
+       LIMIT 1`,
+    );
+
+    if (result.rows.length === 0) {
+      res.status(404).json({ error: "No weekly summary found" });
+      return;
+    }
+
+    res.json({
+      summary: result.rows[0].payload_json,
+      generated_at: result.rows[0].created_at,
+    });
+  } catch (error) {
+    console.error("Failed to fetch weekly summary:", error);
+    res.status(500).json({ error: "Unable to fetch summary" });
   }
 };
