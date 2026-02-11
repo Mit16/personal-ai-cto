@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": [
+    "execution_summary",
+    "dominant_failure_mode",
+    "recommendation"
+  ],
+  "properties": {
+    "execution_summary": {
+      "type": "string",
+      "maxLength": 300,
+      "description": "Factual summary of the week's work pattern"
+    },
+    "dominant_failure_mode": {
+      "type": "string",
+      "enum": [
+        "idle",
+        "misaligned_work",
+        "low_quality_output",
+        "inconsistent_execution",
+        "no_clear_pattern",
+        "on_track"
+      ],
+      "description": "The primary failure pattern observed"
+    },
+    "recommendation": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "Direct next action to correct the pattern"
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "commit_frequency": {
+          "type": "string",
+          "enum": ["daily", "sporadic", "rare", "none"]
+        },
+        "alignment_trend": {
+          "type": "string",
+          "enum": ["improving", "stable", "declining", "inconsistent"]
+        },
+        "quality_trend": {
+          "type": "string",
+          "enum": ["improving", "stable", "declining", "inconsistent"]
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}
