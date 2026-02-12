@@ -26,8 +26,7 @@ export async function sendEnforcementMessage(
     await axios.post(DISCORD_WEBHOOK_URL, {
       content: message,
       username: "AI CTO",
-      avatar_url:
-        "https://www.flaticon.com/free-icon/artificial-intelligence_18525350?term=robot&page=1&position=8&origin=search&related_id=18525350", // Robot icon
+      avatar_url: "https://cdn-icons-png.flaticon.com/512/8943/8943377.png", // Robot icon
     });
 
     console.log(`Enforcement message sent: ${type}`);

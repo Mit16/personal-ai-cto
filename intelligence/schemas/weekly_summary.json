@@ -4,7 +4,8 @@
   "required": [
     "execution_summary",
     "dominant_failure_mode",
-    "recommendation"
+    "recommendation",
+    "metrics"
   ],
   "properties": {
     "execution_summary": {
@@ -31,6 +32,7 @@
     },
     "metrics": {
       "type": "object",
+      "required": ["commit_frequency", "alignment_trend", "quality_trend"],
       "properties": {
         "commit_frequency": {
           "type": "string",
@@ -44,7 +46,8 @@
           "type": "string",
           "enum": ["improving", "stable", "declining", "inconsistent"]
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": false
