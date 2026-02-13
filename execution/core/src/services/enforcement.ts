@@ -5,6 +5,7 @@ import {
   getActiveDriftEvents,
 } from "./drift.js";
 import { sendEnforcementMessage, formatDriftMessage } from "./discord.js";
+import { ingestCommits } from "./git.js";
 
 /**
  * Daily enforcement jon
@@ -14,6 +15,16 @@ export async function runDailyEnforcement(): Promise<void> {
   console.log("Running daily enforcement check...");
 
   try {
+    // 1. AUTO-INGEST: Fetch latest changes from all projects first
+    const projects = await pool.query("SELECT id FROM projects");
+    for (const row of projects.rows) {
+      try {
+        await ingestCommits(row.id);
+      } catch (e) {
+        console.error(`Failed to auto-ingest project ${row.id}`, e);
+      }
+    }
+
     // 1. Update today's activity
     await updateDailyActivity();
 

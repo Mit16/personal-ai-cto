@@ -129,7 +129,13 @@ export async function executeReview(interaction: ChatInputCommandInteraction) {
       review.recommended_action,
     ].join("\n");
 
-    await interaction.editReply(output);
+    if (output.length > 2000) {
+      await interaction.editReply(
+        output.substring(0, 1900) + "\n...(truncated)",
+      );
+    } else {
+      await interaction.editReply(output);
+    }
   } catch (error: any) {
     console.error("Failed to fetch review:", error);
     if (error.response?.status === 404) {
@@ -192,7 +198,14 @@ ${summary.execution_summary}
 **Required Action:**
 ${summary.recommendation}`;
 
-    await interaction.editReply(output);
+    // ADD THIS SAFETY CHECK
+    if (output.length > 2000) {
+      await interaction.editReply(
+        output.substring(0, 1900) + "\n...(truncated)",
+      );
+    } else {
+      await interaction.editReply(output);
+    }
   } catch (error: any) {
     console.error("Failed to generate summary:", error);
     await interaction.editReply("Failed to generate weekly summary");

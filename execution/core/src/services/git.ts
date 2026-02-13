@@ -42,7 +42,9 @@ export async function ingestCommits(projectId: number): Promise<number> {
     // Clone or pull repo
     if (fs.existsSync(repoPath)) {
       git = simpleGit(repoPath);
-      await git.pull();
+      // REPLACE "await git.pull();" WITH THIS:
+      await git.fetch();
+      await git.reset(["--hard", "origin/HEAD"]);
     } else {
       git = simpleGit();
       await git.clone(repoUrl, repoPath);
