@@ -1,4 +1,4 @@
-import { pool } from "../db";
+import { pool } from "../db.js";
 import Anthropic from "@anthropic-ai/sdk";
 import { GoogleGenAI } from "@google/genai";
 import Ajv from "ajv";
