@@ -20,6 +20,20 @@ interface CommitData {
   message: string;
 }
 
+async function ensureRepo(repoUrl: string, repoPath: string): Promise<SimpleGit> {
+  let git: SimpleGit;
+  if (fs.existsSync(repoPath)) {
+    git = simpleGit(repoPath);
+    await git.fetch();
+    await git.reset(["--hard", "origin/HEAD"]);
+  } else {
+    git = simpleGit();
+    await git.clone(repoUrl, repoPath);
+    git = simpleGit(repoPath);
+  }
+  return git;
+}
+
 export async function ingestCommits(projectId: number): Promise<number> {
   try {
     // Get project details
@@ -37,19 +51,7 @@ export async function ingestCommits(projectId: number): Promise<number> {
       repoUrl.split("/").pop()?.replace(".git", "") || `project-${projectId}`;
     const repoPath = path.join(REPOS_DIR, repoName);
 
-    let git: SimpleGit;
-
-    // Clone or pull repo
-    if (fs.existsSync(repoPath)) {
-      git = simpleGit(repoPath);
-      // REPLACE "await git.pull();" WITH THIS:
-      await git.fetch();
-      await git.reset(["--hard", "origin/HEAD"]);
-    } else {
-      git = simpleGit();
-      await git.clone(repoUrl, repoPath);
-      git = simpleGit(repoPath);
-    }
+    const git = await ensureRepo(repoUrl, repoPath);
 
     // Get last stored commit hash
     const lastCommitResult = await pool.query(
@@ -166,11 +168,7 @@ export async function getCommitDiff(
       repoUrl.split("/").pop()?.replace(".git", "") || `project-${projectId}`;
     const repoPath = path.join(REPOS_DIR, repoName);
 
-    if (!fs.existsSync(repoPath)) {
-      throw new Error(`Repository not cloned yet`);
-    }
-
-    const git = simpleGit(repoPath);
+    const git = await ensureRepo(repoUrl, repoPath);
 
     try {
       const diff = await git.diff([`${commitHash}^`, commitHash]);
