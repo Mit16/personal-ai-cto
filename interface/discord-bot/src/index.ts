@@ -1,7 +1,18 @@
-// interface\discord-bot\src\index.ts
 import { Client, GatewayIntentBits, REST, Routes } from "discord.js";
 import { DISCORD_TOKEN, DISCORD_CLIENT_ID } from "./config/config.js";
 import * as goalCommand from "./commands/commands.js";
+import express from "express";
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.get("/", (req, res) => {
+  res.send("Discord bot is running!");
+});
+
+app.listen(PORT, () => {
+  console.log(`Dummy web server listening on port ${PORT} to satisfy Render health checks.`);
+});
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds],
