@@ -1,9 +1,9 @@
-import { pool } from "../db";
+import { pool } from "../db.js";
 import Anthropic from "@anthropic-ai/sdk";
 import { GoogleGenAI } from "@google/genai";
 import Ajv from "ajv";
 import fs from "fs";
-import path, {dirname} from "path";
+import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
