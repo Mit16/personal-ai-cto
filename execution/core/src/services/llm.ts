@@ -11,7 +11,7 @@ const __dirname = dirname(__filename);
 // Load schema
 const schemaPath = path.join(
   __dirname,
-  "../../intelligence/schemas/code_review.json",
+  "../../../../intelligence/schemas/code_review.json",
 );
 const schema = JSON.parse(fs.readFileSync(schemaPath, "utf-8"));
 const ajv = new Ajv();

@@ -3,7 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { GoogleGenAI } from "@google/genai";
 import Ajv from "ajv";
 import fs from "fs";
-import path, {dirname} from "path";
+import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -12,7 +12,7 @@ const __dirname = dirname(__filename);
 // Load schema
 const schemaPath = path.join(
   __dirname,
-  "../../intelligence/schemas/weekly_summary.json",
+  "../../../../intelligence/schemas/weekly_summary.json",
 );
 const schema = JSON.parse(fs.readFileSync(schemaPath, "utf-8"));
 const ajv = new Ajv();
